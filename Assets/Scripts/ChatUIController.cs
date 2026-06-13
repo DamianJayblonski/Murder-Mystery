@@ -88,4 +88,13 @@ public class ChatUIController : MonoBehaviour
             dialogueText.text += "NPC: " + lastNpcMessage;
         }
     }
+
+    public void ClearDialogueText()
+    {
+        lastPlayerMessage = "";
+        lastNpcMessage = "";
+
+        if (dialogueText != null)
+            dialogueText.text = "";
+    }
 }

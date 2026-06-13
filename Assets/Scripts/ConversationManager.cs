@@ -6,6 +6,9 @@ using OpenAI;
 
 public class ConversationManager : MonoBehaviour
 {
+    private bool memoryWasInjectedThisConversation = false;
+    private bool hasConversationContent = false;
+
     [Header("References")]
     [SerializeField] private ChatGPTManager chatGPTManager;
     [SerializeField] private ConversationStorage conversationStorage;
@@ -81,6 +84,7 @@ Twoje odpowiedzi mają być naturalne i pasujące do świata gry.";
 
     public async void SendPlayerMessage(string playerText)
     {
+
         if (!conversationActive || activeCharacter == null)
         {
             Debug.LogWarning("ConversationManager: Brak aktywnej rozmowy.");
@@ -100,6 +104,8 @@ Twoje odpowiedzi mają być naturalne i pasujące do świata gry.";
         }
 
         isBusy = true;
+
+        InjectMemoryIfNeeded();
 
         activeCharacter.currentConversationMessages.Add(CreateUserMessage(playerText));
 
@@ -236,5 +242,94 @@ Twoje odpowiedzi mają być naturalne i pasujące do świata gry.";
             Role = "assistant",
             Content = content
         };
+    }
+
+    public void StartConversationWithoutSendingSummary(string characterId)
+    {
+        if (isBusy)
+        {
+            Debug.LogWarning("ConversationManager: System jest zajęty.");
+            return;
+        }
+
+        CharacterConversationData characterData = conversationStorage.GetCharacterData(characterId);
+        if (characterData == null)
+            return;
+
+        activeCharacter = characterData;
+        conversationStorage.ClearCurrentConversation(characterId);
+
+        activeCharacter.currentConversationMessages.Add(CreateSystemMessage(globalRules));
+
+        string characterPrompt =
+            $"Odgrywasz następującą postać:\n{activeCharacter.characterDescription}\n\n" +
+            "Pozostań wierny tej roli przez całą rozmowę.";
+
+        activeCharacter.currentConversationMessages.Add(CreateSystemMessage(characterPrompt));
+
+        memoryWasInjectedThisConversation = false;
+        hasConversationContent = false;
+        conversationActive = true;
+
+        Debug.Log($"ConversationManager: Aktywna postać ustawiona na {characterId}, bez wysyłania summary.");
+    }
+    private void InjectMemoryIfNeeded()
+    {
+        if (memoryWasInjectedThisConversation)
+            return;
+
+        if (activeCharacter == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(activeCharacter.lastConversationSummary))
+        {
+            string summaryReminder =
+                $"To nie jest pierwsza rozmowa z graczem. " +
+                $"Oto streszczenie poprzednich rozmów:\n{activeCharacter.lastConversationSummary}\n\n" +
+                "Uwzględnij te informacje w odpowiedzi, ale nie cytuj ich dosłownie graczowi.";
+
+            activeCharacter.currentConversationMessages.Add(CreateSystemMessage(summaryReminder));
+        }
+
+        memoryWasInjectedThisConversation = true;
+    }
+
+    public async System.Threading.Tasks.Task SaveCurrentConversationSummaryIfNeeded()
+    {
+        if (!conversationActive || activeCharacter == null)
+            return;
+
+        if (!hasConversationContent)
+            return;
+
+        if (isBusy)
+        {
+            Debug.LogWarning("ConversationManager: Nie można zapisać summary, system jest zajęty.");
+            return;
+        }
+
+        isBusy = true;
+
+        List<ChatMessage> summaryRequestMessages = new List<ChatMessage>(activeCharacter.currentConversationMessages);
+
+        summaryRequestMessages.Add(CreateSystemMessage(
+            "[ADMIN]\n" +
+            "Przygotuj krótkie streszczenie dotychczasowej rozmowy do pamięci długoterminowej tej postaci.\n" +
+            "Uwzględnij tylko ważne fakty, relacje, obietnice, ujawnione informacje i nastawienie postaci do gracza.\n" +
+            "Odpowiedz wyłącznie samym streszczeniem."
+        ));
+
+        string summary = await chatGPTManager.SendMessagesAsync(summaryRequestMessages);
+
+        if (!string.IsNullOrWhiteSpace(summary))
+        {
+            conversationStorage.UpdateSummary(activeCharacter.characterId, summary);
+            OnSummaryCreated?.Invoke(summary);
+            Debug.Log($"Zapisano summary dla {activeCharacter.characterId}: {summary}");
+        }
+
+        activeCharacter.currentConversationMessages.Clear();
+        conversationActive = false;
+        isBusy = false;
     }
 }
