@@ -9,6 +9,9 @@ public class ConversationManager : MonoBehaviour
     private bool memoryWasInjectedThisConversation = false;
     private bool hasConversationContent = false;
 
+    [Header("Debug")]
+    [SerializeField] private bool debugConversationFlow = true;
+
     [Header("References")]
     [SerializeField] private ChatGPTManager chatGPTManager;
     [SerializeField] private ConversationStorage conversationStorage;
@@ -108,6 +111,10 @@ Twoje odpowiedzi mają być naturalne i pasujące do świata gry.";
         InjectMemoryIfNeeded();
 
         activeCharacter.currentConversationMessages.Add(CreateUserMessage(playerText));
+        
+        hasConversationContent = true;
+
+        Debug.Log("[CONVERSATION] Dodano wiadomość gracza. hasConversationContent = true");
 
         string npcResponse = await chatGPTManager.SendMessagesAsync(activeCharacter.currentConversationMessages);
 
@@ -272,14 +279,32 @@ Twoje odpowiedzi mają być naturalne i pasujące do świata gry.";
         conversationActive = true;
 
         Debug.Log($"ConversationManager: Aktywna postać ustawiona na {characterId}, bez wysyłania summary.");
+        if (debugConversationFlow)
+        {
+            Debug.Log(
+                "[SWITCH] Ustawiono aktywną postać: " +
+                characterId +
+                "\nSummary NIE zostało jeszcze wysłane. Zostanie wysłane dopiero przy pierwszym pytaniu."
+            );
+        }
     }
     private void InjectMemoryIfNeeded()
     {
         if (memoryWasInjectedThisConversation)
+        {
+            if (debugConversationFlow)
+                Debug.Log("[MEMORY] Summary było już dołączone w tej rozmowie.");
+
             return;
+        }
 
         if (activeCharacter == null)
+        {
+            if (debugConversationFlow)
+                Debug.LogWarning("[MEMORY] Brak aktywnej postaci.");
+
             return;
+        }
 
         if (!string.IsNullOrWhiteSpace(activeCharacter.lastConversationSummary))
         {
@@ -289,6 +314,23 @@ Twoje odpowiedzi mają być naturalne i pasujące do świata gry.";
                 "Uwzględnij te informacje w odpowiedzi, ale nie cytuj ich dosłownie graczowi.";
 
             activeCharacter.currentConversationMessages.Add(CreateSystemMessage(summaryReminder));
+
+            if (debugConversationFlow)
+            {
+                Debug.Log(
+                    "[MEMORY] Dołączono summary dla postaci: " +
+                    activeCharacter.characterId +
+                    "\nSummary:\n" +
+                    activeCharacter.lastConversationSummary
+                );
+            }
+        }
+        else
+        {
+            if (debugConversationFlow)
+            {
+                Debug.Log("[MEMORY] Brak wcześniejszego summary dla postaci: " + activeCharacter.characterId);
+            }
         }
 
         memoryWasInjectedThisConversation = true;
@@ -297,15 +339,30 @@ Twoje odpowiedzi mają być naturalne i pasujące do świata gry.";
     public async System.Threading.Tasks.Task SaveCurrentConversationSummaryIfNeeded()
     {
         if (!conversationActive || activeCharacter == null)
+        {
+            if (debugConversationFlow)
+                Debug.Log("[SUMMARY SAVE] Brak aktywnej rozmowy — nie zapisuję summary.");
+
             return;
+        }
 
         if (!hasConversationContent)
+        {
+            if (debugConversationFlow)
+                Debug.Log("[SUMMARY SAVE] Brak treści rozmowy — nie zapisuję summary.");
+
             return;
+        }
 
         if (isBusy)
         {
-            Debug.LogWarning("ConversationManager: Nie można zapisać summary, system jest zajęty.");
+            Debug.LogWarning("[SUMMARY SAVE] System jest zajęty — nie można teraz zapisać summary.");
             return;
+        }
+
+        if (debugConversationFlow)
+        {
+            Debug.Log("[SUMMARY SAVE] Rozpoczynam generowanie summary dla: " + activeCharacter.characterId);
         }
 
         isBusy = true;
@@ -325,7 +382,20 @@ Twoje odpowiedzi mają być naturalne i pasujące do świata gry.";
         {
             conversationStorage.UpdateSummary(activeCharacter.characterId, summary);
             OnSummaryCreated?.Invoke(summary);
-            Debug.Log($"Zapisano summary dla {activeCharacter.characterId}: {summary}");
+
+            if (debugConversationFlow)
+            {
+                Debug.Log(
+                    "[SUMMARY SAVE] Zapisano summary dla: " +
+                    activeCharacter.characterId +
+                    "\nSummary:\n" +
+                    summary
+                );
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[SUMMARY SAVE] Model zwrócił puste summary.");
         }
 
         activeCharacter.currentConversationMessages.Clear();

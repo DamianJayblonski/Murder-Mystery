@@ -9,6 +9,7 @@ public class CharacterConversationSwitcher : MonoBehaviour
 
     [Header("Characters")]
     [SerializeField] private string[] characterIds;
+    [SerializeField] private GameObject[] characterModels;
 
     [Header("Optional UI")]
     [SerializeField] private TMP_Text characterNameText;
@@ -23,13 +24,16 @@ public class CharacterConversationSwitcher : MonoBehaviour
             return;
         }
 
+        if (characterModels == null || characterModels.Length != characterIds.Length)
+        {
+            Debug.LogWarning("CharacterConversationSwitcher: Liczba modeli nie zgadza się z liczbą ID postaci.");
+        }
+
         SwitchToCharacter(currentIndex);
     }
 
     public async void NextCharacter()
     {
-        if (characterIds.Length == 0) return;
-
         await conversationManager.SaveCurrentConversationSummaryIfNeeded();
 
         currentIndex++;
@@ -42,8 +46,6 @@ public class CharacterConversationSwitcher : MonoBehaviour
 
     public async void PreviousCharacter()
     {
-        if (characterIds.Length == 0) return;
-
         await conversationManager.SaveCurrentConversationSummaryIfNeeded();
 
         currentIndex--;
@@ -60,6 +62,8 @@ public class CharacterConversationSwitcher : MonoBehaviour
 
         conversationManager.StartConversationWithoutSendingSummary(characterId);
 
+        UpdateCharacterModel(index);
+
         if (chatUIController != null)
         {
             chatUIController.ClearDialogueText();
@@ -71,5 +75,19 @@ public class CharacterConversationSwitcher : MonoBehaviour
         }
 
         Debug.Log("Przełączono rozmowę na postać: " + characterId);
+    }
+
+    private void UpdateCharacterModel(int activeIndex)
+    {
+        if (characterModels == null || characterModels.Length == 0)
+            return;
+
+        for (int i = 0; i < characterModels.Length; i++)
+        {
+            if (characterModels[i] != null)
+            {
+                characterModels[i].SetActive(i == activeIndex);
+            }
+        }
     }
 }
