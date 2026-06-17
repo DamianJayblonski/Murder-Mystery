@@ -6,6 +6,7 @@ public class CharacterConversationSwitcher : MonoBehaviour
     [Header("References")]
     [SerializeField] private ConversationManager conversationManager;
     [SerializeField] private ChatUIController chatUIController;
+    [SerializeField] private string[] characterNames;
 
     [Header("Characters")]
     [SerializeField] private string[] characterIds;
@@ -72,6 +73,11 @@ public class CharacterConversationSwitcher : MonoBehaviour
         if (characterNameText != null)
         {
             characterNameText.text = characterId;
+        }
+        
+        if (chatUIController != null && characterNames != null && characterNames.Length > index)
+        {
+            chatUIController.SetCharacterName(characterNames[index]);
         }
 
         Debug.Log("Przełączono rozmowę na postać: " + characterId);

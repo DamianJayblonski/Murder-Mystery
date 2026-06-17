@@ -1065,6 +1065,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   conversationManager: {fileID: 1183571423}
   chatUIController: {fileID: 1783816847}
+  characterNames:
+  - Anna
+  - Tomasz
+  - Piotr
   characterIds:
   - innkeeper_01
   - suspect_01
@@ -3441,7 +3445,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &654926714
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4371,7 +4375,7 @@ RectTransform:
   m_GameObject: {fileID: 837764301}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1828998602}
@@ -4379,9 +4383,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 310, y: 0}
+  m_AnchoredPosition: {x: 1300.6499, y: 0}
   m_SizeDelta: {x: 1981.3, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 1, y: 1}
 --- !u!114 &837764303
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4429,12 +4433,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
+  m_fontSize: 48
   m_fontSizeBase: 50
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 42.1
-  m_fontSizeMax: 80.7
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 30
+  m_fontSizeMax: 48
   m_fontStyle: 0
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 256
@@ -4465,7 +4469,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 721.1258, y: 14.975037, z: -84.45358, w: 30.118622}
+  m_margin: {x: 1341.8473, y: 14.975037, z: -53.979927, w: 30.118622}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -6930,12 +6934,13 @@ MonoBehaviour:
   debugConversationFlow: 1
   chatGPTManager: {fileID: 1183571424}
   conversationStorage: {fileID: 1183571422}
-  globalRules: "Jeste\u015B postaci\u0105 w grze RPG.\r\nZawsze pozostajesz w roli.\r\nNigdy
-    nie m\xF3w, \u017Ce jeste\u015B AI ani modelem j\u0119zykowym.\r\nNie wspominaj
-    o Unity, kodzie, OpenAI ani \u017Cadnych systemach technicznych.\r\nOdpowiadaj
-    zgodnie z opisem postaci.\r\nJe\u015Bli czego\u015B posta\u0107 nie wie, nie
-    zmy\u015Blaj wiedzy spoza jej zakresu.\r\nTwoje odpowiedzi maj\u0105 by\u0107
-    naturalne i pasuj\u0105ce do \u015Bwiata gry."
+  globalRules: "Jeste\u015B postaci\u0105 w grze RPG.\r\nOdpowiadaj tylko na pytania
+    kt\xF3re s\u0105 ci zadane i nic wi\u0119cej.\nTwoje odpowiedzi maj\u0105 by\u0107
+    kr\xF3tki i zwi\u0119z\u0142e.\nZawsze pozostajesz w roli.\r\nNigdy nie m\xF3w,
+    \u017Ce jeste\u015B AI ani modelem j\u0119zykowym.\r\nOdpowiadaj zgodnie z opisem
+    postaci.\r\nJe\u015Bli czego\u015B posta\u0107 nie wie, nie zmy\u015Blaj wiedzy
+    spoza jej zakresu.\r\nTwoje odpowiedzi maj\u0105 by\u0107 naturalne i pasuj\u0105ce
+    do \u015Bwiata gry."
   OnNpcResponse:
     m_PersistentCalls:
       m_Calls: []

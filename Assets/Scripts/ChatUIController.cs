@@ -14,6 +14,8 @@ public class ChatUIController : MonoBehaviour
     private string lastPlayerMessage = "";
     private string lastNpcMessage = "";
 
+    private string currentCharacterName = "NPC";
+
     private void Start()
     {
         if (conversationManager != null)
@@ -85,7 +87,7 @@ public class ChatUIController : MonoBehaviour
 
         if (!string.IsNullOrWhiteSpace(lastNpcMessage))
         {
-            dialogueText.text += "NPC: " + lastNpcMessage;
+            dialogueText.text += currentCharacterName + ": " + lastNpcMessage;
         }
     }
 
@@ -96,5 +98,10 @@ public class ChatUIController : MonoBehaviour
 
         if (dialogueText != null)
             dialogueText.text = "";
+    }
+
+    public void SetCharacterName(string characterName)
+    {
+        currentCharacterName = characterName;
     }
 }
